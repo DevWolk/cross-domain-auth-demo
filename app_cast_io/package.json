@@ -1,0 +1,16 @@
+{
+  "name": "app_cast_io",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^8.5.1",
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0"
+  }
+}
