@@ -25,7 +25,10 @@ This project demonstrates various methods of cross-domain authentication using J
    127.0.0.1 app.cast.io cast.io castio.au castio.cn castio.us
    ```
 
-3. Run `docker-compose up --build`
+3. Run the following command to start the project:
+   ```
+   docker compose up --build
+   ```
 
 ## Testing
 
