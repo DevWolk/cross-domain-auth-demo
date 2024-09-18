@@ -31,5 +31,5 @@ app.post('/api/checkAuth', async (req, res) => {
 });
 
 app.listen(config.PORT, () => {
-    console.log(`app.cast.io running on port ${config.PORT}`);
+    console.log(`cast.io running on port ${config.PORT}`);
 });

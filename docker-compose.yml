@@ -13,6 +13,7 @@ services:
       - cast_io
       - castio_au
       - castio_cn
+      - castio_uk
       - castio_us
     networks:
       - app-network
@@ -64,6 +65,18 @@ services:
       app-network:
         aliases:
           - castio.cn
+
+  castio_uk:
+    build: ./castio_uk
+    container_name: castio_uk
+    expose:
+      - "80"
+    env_file:
+      - ./castio_uk/.env
+    networks:
+      app-network:
+        aliases:
+          - castio.uk
 
   castio_us:
     build: ./castio_us

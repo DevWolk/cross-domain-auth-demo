@@ -11,5 +11,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(config.PORT, () => {
-    console.log(`castio_au running on port ${config.PORT}`);
+    console.log(`castio_uk running on port ${config.PORT}`);
 });
