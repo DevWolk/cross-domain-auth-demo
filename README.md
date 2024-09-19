@@ -2,27 +2,38 @@
 
 ## Project Overview
 
-This project demonstrates various methods of cross-domain authentication using JWT cookies, subdomains, shared SSL certificates, iframes, the postMessage API, and SSO redirect-based authentication flow.
+This project demonstrates various methods of cross-domain authentication using JWT tokens, subdomains, shared SSL certificates, iframes, postMessage API, and redirect-based SSO authentication.
 
-## Sites
+## Domains and Authentication Methods
 
-1. **https://app.cast.io/**: Main login site (expected to succeed)
-2. **https://cast.io/**: Shared certificate with main domain (expected to succeed)
-3. **https://castio.au/**: iframe authentication check (expected to succeed)
-4. **https://castio.cn/**: postMessage authentication check (expected to succeed)
-5. **https://castio.us/**: Attempt to set additional cookie (expected to fail)
-6. **https://castio.uk/**: Attempt to make a direct cross-site request to app.cast.io (expected to succeed)
-7. **https://castio.ca/**: Redirect-based authentication flow with app.cast.io (expected to succeed)
+1. **https://app.cast.io/**: Main login site
+2. **https://cast.io/**: Shared certificate with main domain
+3. **https://castio.au/**: iframe authentication check
+4. **https://castio.cn/**: postMessage authentication check
+5. **https://castio.us/**: Attempt to set additional cookie
+6. **https://castio.uk/**: Direct cross-site request to app.cast.io
+7. **https://castio.ca/**: Redirect-based authentication flow with app.cast.io
 
-## Setup
+## Comparison Table of Methods
 
-1. Generate self-signed SSL certificates by running the following script:
+| Method             | Advantages                               | Disadvantages                               |
+|--------------------|------------------------------------------|---------------------------------------------|
+| Shared domain      | Simple implementation, reliable          | Limited to domains with shared TLD          |
+| iframe             | Works across different domains           | May be blocked by browser security policies |
+| postMessage        | Flexible, works across different domains | Requires Browser support                    |
+| Setting cookie     | Demonstrates browser limitations         | Doesn't work across different domains       |
+| CORS request       | Simple implementation                    | Depends on CORS settings on the server      |
+| Redirect-based SSO | Reliable, widely supported               | May be less convenient for development      |
+
+## Setup and Run
+
+1. Generate self-signed SSL certificates:
    ```bash
    ./nginx/generate_ssl_certs.sh
    ```
    This script will create certificates for all required domains in the `nginx/ssl_certs/` directory.
 
-2. Add the following to `/etc/hosts`:
+2. Add the following entries to your `/etc/hosts` file:
    ```
    127.0.0.1 app.cast.io
    127.0.0.1 cast.io
@@ -33,7 +44,7 @@ This project demonstrates various methods of cross-domain authentication using J
    127.0.0.1 castio.ca
    ```
 
-3. Run the following command to start the project:
+3. Run the project:
    ```
    docker compose up --build
    ```
@@ -47,8 +58,8 @@ This project demonstrates various methods of cross-domain authentication using J
 ## Expected Results
 
 - **app.cast.io & cast.io**: Successful authentication (shared domain)
-- **castio.au**: Successful (iframe method)
-- **castio.cn**: Successful (postMessage method)
+- **castio.au**: Successful (iframe method). The iframe loads a page from the main domain, which checks for the token and sends the result back to the parent window.
+- **castio.cn**: Successful (postMessage method). When properly implemented with origin checking, it's a fairly secure method.
 - **castio.us**: Failed cookie set (different root domain). If you try to set a cookie for `castio.us` when logging in to `app.cast.io`, the browser blocks the cookie setting with an error: `This attempt to set a cookie via a Set-Cookie header was blocked because its Domain attribute was invalid with regards to the current host url`.
 - **castio.uk**: Successful (cross-site request)
 - **castio.ca**: Successful (redirect-based authentication flow)
@@ -63,3 +74,8 @@ This project demonstrates various methods of cross-domain authentication using J
 ## Cleanup
 
 Run `docker compose down` to stop and remove containers
+
+## How do I add a new domain to the demo?**
+Create a new folder for the domain, add the necessary files (.env, package.json, server.js, config.js, Dockerfile, public/, [favicon.ico](https://favicon.io/emoji-favicons/), etc.), update docker-compose.yml and nginx configuration.
+Update generate_ssl_certs.sh to include the new domain and run the script to generate SSL certificates.
+Update the README with the new domain and authentication method.
