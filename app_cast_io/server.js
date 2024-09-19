@@ -9,6 +9,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
 
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({message: 'Internal server error', error: err.message});
+});
+
 const corsOptions = {
     origin: function (origin, callback) {
         if (config.CORS_ORIGINS.indexOf(origin) !== -1 || !origin) {
@@ -26,14 +31,42 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.options('*', cors(corsOptions));
+app.get('/login', (req, res) => {
+    const authRedirect = req.query['auth-redirect'];
+    const token = req.cookies.jwt;
 
-app.post('/login', (req, res) => {
+    if (token) {
+        try {
+            jwt.verify(token, config.SECRET_KEY);
+            if (authRedirect) {
+                const validationParam = jwt.sign({token}, config.SECRET_KEY, {expiresIn: '5m'});
+                return res.redirect(`https://castio.ca/api/checkAuth?app-cookie=${encodeURIComponent(token)}&validation=${encodeURIComponent(validationParam)}`);
+            }
+            return res.sendFile(__dirname + '/public/index.html');
+        } catch (err) {
+            console.error('Token verification error:', err);
+            res.clearCookie('jwt');
+        }
+    }
+
+    if (authRedirect) {
+        res.cookie('auth_redirect', '1', {maxAge: 300000, httpOnly: true, secure: config.NODE_ENV === 'production'});
+    }
+    res.sendFile(__dirname + '/public/index.html');
+});
+
+app.post('/login', async (req, res) => {
     const {email, password} = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({message: 'Email and password are required'});
+    }
+
     if (email === config.ADMIN_EMAIL && password === config.ADMIN_PASSWORD) {
         const token = jwt.sign({email}, config.SECRET_KEY, {expiresIn: '1h'});
 
         res.cookie('jwt', token, {
-            httpOnly: config.COOKIE_HTTP_ONLY,
+            httpOnly: config.COOKIE_HTTP_ONLY === 'true',
             secure: config.NODE_ENV === 'production',
             sameSite: config.COOKIE_SAME_SITE,
             domain: config.COOKIE_DOMAIN,
@@ -48,7 +81,17 @@ app.post('/login', (req, res) => {
             maxAge: config.COOKIE_MAX_AGE
         });
 
-        res.status(200).json({message: 'Login successful', email: email});
+        if (req.cookies.auth_redirect) {
+            res.clearCookie('auth_redirect');
+            const validationParam = jwt.sign({token}, config.SECRET_KEY, {expiresIn: '5m'});
+            const redirectUrl = `https://castio.ca/api/checkAuth?app-cookie=${encodeURIComponent(token)}&validation=${encodeURIComponent(validationParam)}`;
+            res.status(200).json({
+                message: 'Login successful',
+                redirect: redirectUrl
+            });
+        } else {
+            res.status(200).json({message: 'Login successful', email: email});
+        }
     } else {
         res.status(401).json({message: 'Invalid credentials'});
     }
@@ -56,7 +99,7 @@ app.post('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
     res.clearCookie('jwt', {
-        httpOnly: config.COOKIE_HTTP_ONLY,
+        httpOnly: config.COOKIE_HTTP_ONLY === 'true',
         secure: config.NODE_ENV === 'production',
         sameSite: config.COOKIE_SAME_SITE,
         domain: config.COOKIE_DOMAIN
@@ -75,7 +118,7 @@ app.post('/logout', (req, res) => {
 app.post('/api/checkAuth', (req, res) => {
     const token = req.cookies.jwt || req.body.token;
     if (!token) {
-        return res.status(401).json({message: 'Not authenticated'});
+        return res.status(401).json({message: 'No token provided'});
     }
     try {
         const decoded = jwt.verify(token, config.SECRET_KEY);
@@ -87,16 +130,16 @@ app.post('/api/checkAuth', (req, res) => {
 });
 
 app.get('/api/auth-check-iframe', (req, res) => {
-  const token = req.cookies.jwt;
-  if (!token) {
-    return res.json({ isAuthenticated: false, message: 'Not authenticated' });
-  }
-  try {
-    const decoded = jwt.verify(token, config.SECRET_KEY);
-    res.json({ isAuthenticated: true, message: 'Authenticated', email: decoded.email });
-  } catch (err) {
-    res.json({ isAuthenticated: false, message: 'Invalid token' });
-  }
+    const token = req.cookies.jwt;
+    if (!token) {
+        return res.json({isAuthenticated: false, message: 'Not authenticated'});
+    }
+    try {
+        const decoded = jwt.verify(token, config.SECRET_KEY);
+        res.json({isAuthenticated: true, message: 'Authenticated', email: decoded.email});
+    } catch (err) {
+        res.json({isAuthenticated: false, message: 'Invalid token'});
+    }
 });
 
 app.listen(config.PORT, () => {

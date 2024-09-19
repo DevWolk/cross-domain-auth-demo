@@ -25,7 +25,7 @@ app.post('/api/checkAuth', async (req, res) => {
     } catch (error) {
         res.status(401).json({
             message: 'Authentication failed',
-            error: error.message
+            error: error.response ? error.response.data : error.message
         });
     }
 });

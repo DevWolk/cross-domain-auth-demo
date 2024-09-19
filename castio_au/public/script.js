@@ -43,7 +43,7 @@ document.getElementById('check-auth').addEventListener('click', async () => {
         }
     } catch (error) {
         console.error('Error checking auth status:', error);
-        showMessage('Error checking authentication status', 'error');
+        showMessage('Error checking authentication status: ' + error.message, 'error');
     }
 });
 

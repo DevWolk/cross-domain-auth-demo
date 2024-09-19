@@ -28,14 +28,21 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
         const data = await response.json();
         if (response.ok) {
-            showMessage('Login successful');
-            showLogoutSection(data.email);
+            if (data.redirect) {
+                showMessage('Login successful. Redirecting...', false);
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 2000);
+            } else {
+                showMessage('Login successful');
+                showLogoutSection(data.email);
+            }
         } else {
-            showMessage(data.message, true);
+            showMessage(data.message || 'Login failed', true);
         }
     } catch (error) {
         console.error('Error during login:', error);
-        showMessage('Error during login', true);
+        showMessage('Error during login. Please try again.', true);
     }
 });
 
@@ -77,7 +84,7 @@ async function checkAuthStatus() {
     } catch (error) {
         console.error('Error checking auth status:', error);
         showLoginSection();
-        showMessage('Error checking authentication status', true);
+        showMessage('Error checking authentication status. Please try again.', true);
     }
 }
 

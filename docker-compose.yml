@@ -90,6 +90,18 @@ services:
         aliases:
           - castio.us
 
+  castio_ca:
+    build: ./castio_ca
+    container_name: castio_ca
+    expose:
+      - "80"
+    env_file:
+      - ./castio_ca/.env
+    networks:
+      app-network:
+        aliases:
+          - castio.ca
+
 networks:
   app-network:
     driver: bridge

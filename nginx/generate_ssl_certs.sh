@@ -20,6 +20,7 @@ generate_cert "castio.au"
 generate_cert "castio.cn"
 generate_cert "castio.us"
 generate_cert "castio.uk"
+generate_cert "castio.ca"
 
 # Generate a wildcard certificate for *.cast.io
 echo "Generating wildcard certificate for *.cast.io"
