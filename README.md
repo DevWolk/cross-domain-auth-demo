@@ -75,7 +75,7 @@ This project demonstrates various methods of cross-domain authentication using J
 
 Run `docker compose down` to stop and remove containers
 
-## How do I add a new domain to the demo?**
+## How do I add a new domain to the demo?
 Create a new folder for the domain, add the necessary files (.env, package.json, server.js, config.js, Dockerfile, public/, [favicon.ico](https://favicon.io/emoji-favicons/), etc.), update docker-compose.yml and nginx configuration.
 Update generate_ssl_certs.sh to include the new domain and run the script to generate SSL certificates.
 Update the README with the new domain and authentication method.
