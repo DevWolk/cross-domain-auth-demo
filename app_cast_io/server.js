@@ -9,11 +9,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
 
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({message: 'Internal server error', error: err.message});
-});
-
 const corsOptions = {
     origin: function (origin, callback) {
         if (config.CORS_ORIGINS.indexOf(origin) !== -1 || !origin) {
@@ -43,8 +38,8 @@ app.get('/login', (req, res) => {
                 return res.redirect(`https://castio.ca/api/checkAuth?app-cookie=${encodeURIComponent(token)}&validation=${encodeURIComponent(validationParam)}`);
             }
             return res.sendFile(__dirname + '/public/index.html');
-        } catch (err) {
-            console.error('Token verification error:', err);
+        } catch (error) {
+            console.error('Token verification error:', error);
             res.clearCookie('jwt');
         }
     }
@@ -118,28 +113,33 @@ app.post('/logout', (req, res) => {
 app.post('/api/checkAuth', (req, res) => {
     const token = req.cookies.jwt || req.body.token;
     if (!token) {
-        return res.status(401).json({message: 'No token provided'});
+        return res.status(401).json({message: 'No token found'});
     }
     try {
         const decoded = jwt.verify(token, config.SECRET_KEY);
         res.status(200).json({message: 'Authenticated', email: decoded.email});
-    } catch (err) {
+    } catch (error) {
         res.clearCookie('jwt');
-        res.status(401).json({message: 'Invalid token'});
+        res.status(401).json({message: 'Invalid token: ' + error.message});
     }
 });
 
 app.get('/api/auth-check-iframe', (req, res) => {
     const token = req.cookies.jwt;
     if (!token) {
-        return res.json({isAuthenticated: false, message: 'Not authenticated'});
+        return res.json({isAuthenticated: false, message: 'No token found'});
     }
     try {
         const decoded = jwt.verify(token, config.SECRET_KEY);
         res.json({isAuthenticated: true, message: 'Authenticated', email: decoded.email});
-    } catch (err) {
-        res.json({isAuthenticated: false, message: 'Invalid token'});
+    } catch (error) {
+        res.json({isAuthenticated: false, message: 'Invalid token: ' + error.message});
     }
+});
+
+app.use((error, req, res, next) => {
+    console.error(error.stack);
+    res.status(500).json({message: 'Internal server error', error: error.message});
 });
 
 app.listen(config.PORT, () => {

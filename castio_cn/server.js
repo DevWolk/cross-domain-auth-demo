@@ -24,10 +24,15 @@ app.post('/api/checkAuth', async (req, res) => {
         res.json(response.data);
     } catch (error) {
         res.status(401).json({
-            message: 'Authentication failed',
+            message: 'No token found',
             error: error.response ? error.response.data : error.message
         });
     }
+});
+
+app.use((error, req, res, next) => {
+    console.error(error.stack);
+    res.status(500).json({message: 'Internal server error', error: error.message});
 });
 
 app.listen(config.PORT, () => {

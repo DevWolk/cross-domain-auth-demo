@@ -26,26 +26,29 @@ app.get('/api/checkAuth', (req, res) => {
             maxAge: config.COOKIE_MAX_AGE
         });
         res.redirect('/?auth=success');
-    } catch (err) {
-        console.error('Token validation error:', err);
-        res.status(401).json({message: 'Invalid token'});
+    } catch (error) {
+        res.status(401).json({message: 'Invalid token: ' + error.message});
     }
 });
 
 app.get('/api/checkUserAuth', (req, res) => {
     const token = req.cookies.jwt;
     if (!token) {
-        return res.status(401).json({message: 'Not authenticated'});
+        return res.status(401).json({message: 'No token found'});
     }
     try {
         const decoded = jwt.verify(token, config.SECRET_KEY);
         res.status(200).json({message: 'Authenticated', email: decoded.email});
-    } catch (err) {
-        console.error('Token verification error:', err);
-        res.status(401).json({message: 'Invalid token'});
+    } catch (error) {
+        res.status(401).json({message: 'Invalid token: ' + error.message});
     }
 });
 
+app.use((error, req, res, next) => {
+    console.error(error.stack);
+    res.status(500).json({message: 'Internal server error', error: error.message});
+});
+
 app.listen(config.PORT, () => {
-    console.log(`castio_ca running on port ${config.PORT}`);
+    console.log(`castio.ca running on port ${config.PORT}`);
 });

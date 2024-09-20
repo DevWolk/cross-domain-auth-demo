@@ -1,7 +1,9 @@
-function showMessage(message, isError = false) {
+document.getElementById('site-name').textContent = window.location.hostname;
+
+function showMessage(message, type) {
     const messageElement = document.getElementById('message');
     messageElement.textContent = message;
-    messageElement.className = isError ? 'error' : 'success';
+    messageElement.className = type;
     messageElement.style.display = 'block';
 }
 
@@ -29,20 +31,19 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const data = await response.json();
         if (response.ok) {
             if (data.redirect) {
-                showMessage('Login successful. Redirecting...', false);
+                showMessage('Login successful. Redirecting...', 'success');
                 setTimeout(() => {
                     window.location.href = data.redirect;
                 }, 2000);
             } else {
-                showMessage('Login successful');
+                showMessage(`Authenticated as: ${data.email}`, 'success');
                 showLogoutSection(data.email);
             }
         } else {
-            showMessage(data.message || 'Login failed', true);
+            showMessage(data.message || 'Login failed', 'error');
         }
     } catch (error) {
-        console.error('Error during login:', error);
-        showMessage('Error during login. Please try again.', true);
+        showMessage('Error during login: ' + error.message, 'error');
     }
 });
 
@@ -55,15 +56,18 @@ document.getElementById('logout-button').addEventListener('click', async () => {
 
         const data = await response.json();
         if (response.ok) {
-            showMessage(data.message);
+            showMessage(data.message, 'success');
             showLoginSection();
         } else {
-            showMessage(data.message, true);
+            showMessage(data.message, 'error');
         }
     } catch (error) {
-        console.error('Error during logout:', error);
-        showMessage('Error during logout', true);
+        showMessage('Error during logout: ' + error.message, 'error');
     }
+});
+
+document.getElementById('refresh-button').addEventListener('click', function() {
+    location.reload();
 });
 
 async function checkAuthStatus() {
@@ -82,9 +86,8 @@ async function checkAuthStatus() {
             hideMessage();
         }
     } catch (error) {
-        console.error('Error checking auth status:', error);
         showLoginSection();
-        showMessage('Error checking authentication status. Please try again.', true);
+        showMessage('Error checking auth status: ' + error.message, 'error');
     }
 }
 
@@ -116,11 +119,10 @@ window.addEventListener('message', async (event) => {
                 data: data
             }, event.origin);
         } catch (error) {
-            console.error('Error checking auth status:', error);
             event.source.postMessage({
                 type: 'AUTH_STATUS',
                 isAuthenticated: false,
-                error: 'Error checking authentication status'
+                error: 'Error checking auth status: ' + error.message
             }, event.origin);
         }
     }

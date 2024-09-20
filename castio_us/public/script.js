@@ -12,11 +12,10 @@ document.getElementById('check-auth').addEventListener('click', async () => {
         if (response.ok) {
             showMessage(`Authenticated as: ${data.email}`, 'success');
         } else {
-            showMessage(data.message || 'Not authenticated', 'error');
+            showMessage(data.message || 'No token found', 'error');
         }
     } catch (error) {
-        console.error('Error checking auth status:', error);
-        showMessage('Error checking authentication status', 'error');
+        showMessage('Error checking auth status: ' + error.message, 'error');
     }
 });
 

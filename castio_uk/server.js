@@ -10,6 +10,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.use((error, req, res, next) => {
+    console.error(error.stack);
+    res.status(500).json({message: 'Internal server error', error: error.message});
+});
+
 app.listen(config.PORT, () => {
-    console.log(`castio_uk running on port ${config.PORT}`);
+    console.log(`castio.uk running on port ${config.PORT}`);
 });

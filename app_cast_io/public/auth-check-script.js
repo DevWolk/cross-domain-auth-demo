@@ -7,8 +7,7 @@ async function checkAuthStatus() {
         const data = await response.json();
         return {isAuthenticated: response.ok, data: data};
     } catch (error) {
-        console.error('Error checking auth status:', error);
-        return {isAuthenticated: false, error: 'Error checking authentication status'};
+        return {isAuthenticated: false, error: 'Error checking auth status: ' + error.message};
     }
 }
 
