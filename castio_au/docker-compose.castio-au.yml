@@ -1,0 +1,12 @@
+services:
+  castio_au:
+    build: ./castio_au
+    container_name: castio_au
+    expose:
+      - "80"
+    env_file:
+      - ./castio_au/.env
+    networks:
+      app-network:
+        aliases:
+          - castio.au

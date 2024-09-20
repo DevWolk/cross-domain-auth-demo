@@ -11,7 +11,10 @@ function hideMessage() {
     document.getElementById('message').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', checkAuthStatus);
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
+    loadSites();
+});
 
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -100,6 +103,33 @@ function showLogoutSection(email) {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('logout-section').style.display = 'block';
     document.getElementById('user-email').textContent = email;
+}
+
+async function loadSites() {
+    try {
+        const response = await fetch('/sites.txt');
+        if (response.ok) {
+            const sitesText = await response.text();
+            const sites = sitesText.trim().split('\n');
+            const siteListElement = document.getElementById('site-list');
+
+            siteListElement.innerHTML = '';
+
+            sites.forEach(site => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `https://${site}`;
+                link.target = '_blank';
+                link.textContent = site;
+                listItem.appendChild(link);
+                siteListElement.appendChild(listItem);
+            });
+        } else {
+            showMessage('Failed to load sites list', 'error');
+        }
+    } catch (error) {
+        showMessage('Error loading sites: ' + error.message, 'error');
+    }
 }
 
 window.addEventListener('message', async (event) => {

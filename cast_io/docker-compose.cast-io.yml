@@ -1,0 +1,12 @@
+services:
+  cast_io:
+    build: ./cast_io
+    container_name: cast_io
+    expose:
+      - "80"
+    env_file:
+      - ./cast_io/.env
+    networks:
+      app-network:
+        aliases:
+          - cast.io

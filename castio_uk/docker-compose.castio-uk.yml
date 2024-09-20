@@ -1,0 +1,12 @@
+services:
+  castio_uk:
+    build: ./castio_uk
+    container_name: castio_uk
+    expose:
+      - "80"
+    env_file:
+      - ./castio_uk/.env
+    networks:
+      app-network:
+        aliases:
+          - castio.uk

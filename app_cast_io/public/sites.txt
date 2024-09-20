@@ -1,0 +1,7 @@
+app.cast.io
+cast.io
+castio.au
+castio.ca
+castio.cn
+castio.uk
+castio.us

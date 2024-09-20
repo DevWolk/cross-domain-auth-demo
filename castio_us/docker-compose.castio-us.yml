@@ -1,0 +1,12 @@
+services:
+  castio_us:
+    build: ./castio_us
+    container_name: castio_us
+    expose:
+      - "80"
+    env_file:
+      - ./castio_us/.env
+    networks:
+      app-network:
+        aliases:
+          - castio.us

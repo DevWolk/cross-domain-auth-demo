@@ -6,6 +6,7 @@ if ! command -v openssl &> /dev/null; then
     exit 1
 fi
 
+# Function to generate a certificate for a single domain
 generate_cert() {
     local domain=$1
     echo "Generating certificate for $domain"
@@ -15,12 +16,24 @@ generate_cert() {
         -subj "/C=US/ST=State/L=City/O=Organization/CN=$domain"
 }
 
-# Generate certificates for individual domains
-generate_cert "castio.au"
-generate_cert "castio.cn"
-generate_cert "castio.us"
-generate_cert "castio.uk"
-generate_cert "castio.ca"
+# Read domains from sites.txt
+SITES_FILE="app_cast_io/public/sites.txt"
+if [ ! -f "$SITES_FILE" ]; then
+    echo "Error: $SITES_FILE not found!"
+    exit 1
+fi
+
+# Generate certificates for all domains in sites.txt
+while IFS= read -r domain
+do
+    # Skip empty lines and lines starting with #
+    [[ -z "$domain" || "$domain" =~ ^#.*$ ]] && continue
+
+    # Skip cast.io and app.cast.io as they will be handled by the wildcard cert
+    if [[ "$domain" != "cast.io" && "$domain" != "app.cast.io" ]]; then
+        generate_cert "$domain"
+    fi
+done < "$SITES_FILE"
 
 # Generate a wildcard certificate for *.cast.io
 echo "Generating wildcard certificate for *.cast.io"
